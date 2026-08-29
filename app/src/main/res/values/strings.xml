@@ -1,61 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">AutoClicker</string>
-    <string name="accessibility_service_description">自动连点器服务，用于在指定位置模拟重复点击操作。开启后可通过悬浮球控制点击的开始和停止。</string>
+    <string name="accessibility_service_description">Auto Clicker service used to simulate repetitive clicking operations at specified locations. Once enabled, you can control the start and stop of clicks through the floating ball.</string>
 
-    <!-- 首页 -->
+    <!-- Home -->
     <string name="home_title">AutoClicker</string>
-    <string name="home_subtitle">自动连点器</string>
-    <string name="accessibility_service_label">无障碍服务</string>
-    <string name="accessibility_service_desc">用于模拟点击手势，必须开启</string>
-    <string name="overlay_permission_label">悬浮窗权限</string>
-    <string name="overlay_permission_desc">用于显示控制悬浮球</string>
-    <string name="toolbar_clicker">连点器</string>
-    <string name="status_on">已开启</string>
-    <string name="status_off">未开启</string>
+    <string name="home_subtitle">Auto Clicker</string>
+    <string name="accessibility_service_label">Accessibility Service</string>
+    <string name="accessibility_service_desc">Used to simulate click gestures, must be enabled</string>
+    <string name="overlay_permission_label">Floating Window Permission</string>
+    <string name="overlay_permission_desc">Used to display the control floating ball</string>
+    <string name="toolbar_clicker">Clicker</string>
+    <string name="status_on">Enabled</string>
+    <string name="status_off">Disabled</string>
 
-    <!-- 连点器页面 -->
-    <string name="clicker_title">连点器</string>
-    <string name="interval_label">点击间隔（毫秒）</string>
-    <string name="count_label">点击次数</string>
-    <string name="count_infinite">无限</string>
-    <string name="btn_start">开始连点</string>
-    <string name="btn_stop">停止连点</string>
+    <!-- Clicker Page -->
+    <string name="clicker_title">Clicker</string>
+    <string name="interval_label">Click Interval (ms)</string>
+    <string name="count_label">Click Count</string>
+    <string name="count_infinite">Infinite</string>
+    <string name="btn_start">Start Clicking</string>
+    <string name="btn_stop">Stop Clicking</string>
     <string name="hint_interval">1 ~ 60000</string>
     <string name="hint_count">1 ~ 99999</string>
 
-    <!-- 悬浮球 -->
-    <string name="floating_ball_hint">拖动定位，单击开始/停止</string>
+    <!-- Floating Ball -->
+    <string name="floating_ball_hint">Drag to position, tap to start/stop</string>
 
-    <!-- 抢购 -->
-    <string name="toolbar_rush_buy">抢购</string>
+    <!-- Rush Buy -->
+    <string name="toolbar_rush_buy">Rush Buy</string>
 
-    <!-- 抢票 -->
-    <string name="toolbar_ticket">抢票</string>
+    <!-- Ticket Grabbing -->
+    <string name="toolbar_ticket">Grab Tickets</string>
 
-    <!-- OCR模式 -->
-    <string name="ocr_mode_title">OCR文字识别</string>
-    <string name="ocr_target_text_hint">输入要匹配的文字</string>
-    <string name="ocr_start">开始OCR识别</string>
-    <string name="ocr_stop">停止OCR识别</string>
-    <string name="ocr_running">OCR扫描中...</string>
-    <string name="ocr_matched">已匹配到目标文字！</string>
-    <string name="ocr_clicking">正在点击目标位置...</string>
-    <string name="ocr_no_permission">请先开启无障碍服务和悬浮窗权限</string>
-    <string name="ocr_capture_permission">需要屏幕录制权限才能截屏识别</string>
-    <string name="ocr_empty_target">请先输入目标文字</string>
+    <!-- OCR Mode -->
+    <string name="ocr_mode_title">OCR Text Recognition</string>
+    <string name="ocr_target_text_hint">Enter text to match</string>
+    <string name="ocr_start">Start OCR Recognition</string>
+    <string name="ocr_stop">Stop OCR Recognition</string>
+    <string name="ocr_running">OCR scanning...</string>
+    <string name="ocr_matched">Target text matched!</string>
+    <string name="ocr_clicking">Clicking target position...</string>
+    <string name="ocr_no_permission">Please enable Accessibility Service and Floating Window permissions first</string>
+    <string name="ocr_capture_permission">Screen recording permission is required for screenshot recognition</string>
+    <string name="ocr_empty_target">Please enter target text first</string>
 
-    <!-- 设置菜单 -->
-    <string name="settings">设置</string>
-    <string name="menu_usage_guide">使用说明</string>
-    <string name="menu_about">关于我们</string>
-    <string name="usage_guide_title">使用说明</string>
+    <!-- Settings Menu -->
+    <string name="settings">Settings</string>
+    <string name="menu_usage_guide">Usage Guide</string>
+    <string name="menu_about">About Us</string>
+    <string name="usage_guide_title">Usage Guide</string>
     <string name="usage_guide_content"></string>
-    <string name="guide_prep">1. 开启「无障碍服务」权限：在首页打开无障碍服务开关，跳转到系统设置页面，找到 AutoClicker 并开启\n2. 开启「悬浮窗权限」：在首页打开悬浮窗权限开关，跳转到系统设置页面，允许本应用显示悬浮窗</string>
-    <string name="guide_clicker">用途：在屏幕指定位置自动重复点击\n\n1. 点击底部「连点器」进入连点器页面\n2. 设置「点击间隔」：两次点击之间的等待时间，单位毫秒（如 100ms = 每秒点击 10 次）\n3. 设置「点击次数」：0 表示无限点击，直到手动停止\n4. 点击「开始连点」按钮\n5. 屏幕上出现悬浮球，将悬浮球拖动到需要点击的目标位置\n6. 单击悬浮球，开始自动连点\n7. 再次单击悬浮球，停止连点\n8. 连点过程中可随时拖动悬浮球调整位置</string>
-    <string name="guide_rush_buy">用途：在指定坐标位置快速自动点击，适用于抢购场景\n\n1. 点击底部「抢购」进入抢购页面\n2. 设置「目标 X 坐标」：要点击位置的横向坐标（像素）\n3. 设置「目标 Y 坐标」：要点击位置的纵向坐标（像素）\n4. 可通过截图或开发者工具获取目标坐标\n5. 设置「点击间隔」：建议设置为 50-100 毫秒\n6. 设置「点击次数」：建议设置为 0（无限点击），手动停止\n7. 设置「持续时长」：自动停止的时间（秒），0 表示不自动停止\n8. 点击「开始抢购」，引擎将在目标坐标位置持续快速点击\n9. 在抢购页面可实时查看运行状态，点击「停止抢购」结束</string>
-    <string name="guide_ticket">用途：通过无障碍节点自动操作大麦 APP，自动选座提交订单\n\n1. 点击底部「抢票」进入抢票配置页面\n2. 在「场次」区域：输入想要抢的演出场次关键词（如\"周六\"\"晚场\"），点击添加，可添加多个作为备选\n3. 在「价位」区域：输入可接受的票价档位关键词（如\"580\"\"880\"），点击添加，可添加多个作为备选\n4. 在「观演人」区域：输入观演人姓名，点击添加，可添加多位观演人\n5. 展开「高级设置」可调整：\n   - 操作间隔（毫秒）：每步操作之间的等待时间，建议 200-500\n   - 最大重试次数：售罄后重新尝试的次数，建议 50-100\n6. 打开大麦 APP，进入目标演出的详情页面（停留在演出详情页即可）\n7. 回到本应用，点击「开始抢票」按钮\n8. 引擎将自动执行以下流程：\n   ① 自动点击「选择场次」并匹配预设场次\n   ② 自动点击「选择价位」并匹配预设价位\n   ③ 自动勾选观演人\n   ④ 自动点击「提交订单」\n9. 抢票过程中会显示悬浮日志窗口，实时展示每步操作状态\n10. 抢票成功后会自动停止，售罄时会自动重试\n11. 可随时点击「停止抢票」手动终止</string>
-    <string name="guide_notice">• 抢票前请确保大麦 APP 已登录且收货地址、观演人等信息已填写完整\n• 抢票速度受网络环境和服务器响应影响，本工具仅辅助操作，不保证一定成功\n• 请合理设置操作间隔，过快可能被系统限制</string>
-    <string name="about_title">关于我们</string>
-    <string name="about_content">AutoClicker 自动连点器\n\n版本：1.0.0\n\n一款多功能自动化工具，支持连点、抢购、抢票等功能。\n\n通过无障碍服务实现自动化操作，让重复性任务变得更简单高效。</string>
+    <string name="guide_prep">1. Enable \"Accessibility Service\" permission: Open the accessibility service switch on the home page, go to system settings, find AutoClicker and enable it\n2. Enable \"Floating Window Permission\": Open the floating window permission switch on the home page, go to system settings, and allow this app to display over other apps</string>
+    <string name="guide_clicker">Purpose: Automatically and repeatedly click at specified locations on the screen\n\n1. Click \"Clicker\" at the bottom to enter the clicker page\n2. Set \"Click Interval\": The waiting time between two clicks in milliseconds (e.g., 100ms = 10 clicks per second)\n3. Set \"Click Count\": 0 means infinite clicks until manually stopped\n4. Click the \"Start Clicking\" button\n5. A floating ball will appear on the screen; drag it to the target position that needs to be clicked\n6. Tap the floating ball to start auto-clicking\n7. Tap the floating ball again to stop clicking\n8. You can drag the floating ball to adjust its position at any time during clicking</string>
+    <string name="guide_rush_buy">Purpose: Fast and automatic clicking at specified coordinate positions, suitable for flash sales or rush-buying scenarios\n\n1. Click \"Rush Buy\" at the bottom to enter the rush buy page\n2. Set \"Target X Coordinate\": The horizontal coordinate (in pixels) of the position to click\n3. Set \"Target Y Coordinate\": The vertical coordinate (in pixels) of the position to click\n4. Target coordinates can be obtained via screenshots or developer tools\n5. Set \"Click Interval\": Recommended to be set to 50-100 milliseconds\n6. Set \"Click Count\": Recommended to be set to 0 (infinite clicks), stopped manually\n7. Set \"Duration\": Time to automatically stop in seconds, 0 means no automatic stop\n8. Click \"Start Rush Buy\", and the engine will continuously and rapidly click at the target coordinates\n9. You can view the running status in real-time on the rush buy page; click \"Stop Rush Buy\" to end</string>
+    <string name="guide_ticket">Purpose: Automatically operate the Damai app via accessibility nodes to automatically select seats and submit orders\n\n1. Click \"Grab Tickets\" at the bottom to enter the ticket grabbing configuration page\n2. In the \"Session\" area: Enter keywords for the show session you want to grab (e.g., \"Saturday\", \"Evening Show\"), click add, and you can add multiple alternatives\n3. In the \"Price\" area: Enter keywords for acceptable ticket price tiers (e.g., \"580\", \"880\"), click add, and you can add multiple alternatives\n4. In the \"Spectator\" area: Enter the spectator\'s name and click add; multiple spectators can be added\n5. Expand \"Advanced Settings\" to adjust:\n   - Operation interval (ms): Waiting time between each step, recommended 200-500\n   - Max retry attempts: Number of re-tries after tickets are sold out, recommended 50-100\n6. Open the Damai app and go to the target show\'s details page (stay on the show details page)\n7. Return to this app and click the \"Start Grabbing Tickets\" button\n8. The engine will automatically execute the following process:\n   ① Automatically click \"Select Session\" and match preset sessions\n   ② Automatically click \"Select Price\" and match preset prices\n   ③ Automatically check the spectator\n   ④ Automatically click \"Submit Order\n9. A floating log window will be displayed during the process, showing the status of each step in real-time\n10. It will automatically stop when tickets are successfully grabbed, and will auto-retry when sold out\n11. You can click \"Stop Grabbing Tickets\" at any time to terminate manually</string>
+    <string name="guide_notice">• Please ensure that the Damai app is logged in and information such as shipping address and spectators are completely filled out before grabbing tickets\n• Ticket grabbing speed is affected by the network environment and server response. This tool only assists operation and does not guarantee absolute success\n• Please set the operation interval reasonably; going too fast may result in system restrictions</string>
+    <string name="about_title">About Us</string>
+    <string name="about_content">AutoClicker Auto Clicker\n\nVersion: 1.0.0\n\nA versatile automation tool supporting features such as auto-clicking, rush-buying, and ticket-grabbing.\n\nAchieves automated operations through accessibility services, making repetitive tasks simpler and more efficient.</string>
 </resources>
