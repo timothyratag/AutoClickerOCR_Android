@@ -20,9 +20,16 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: '17'
-
+        
     - name: Generate Gradle Wrapper
-      run: gradle wrapper --gradle-version 8.4
+      run: |
+        mkdir temp-wrapper
+        cd temp-wrapper
+        gradle wrapper --gradle-version 8.4
+        mv gradlew ../
+        mv gradle ../
+        cd ..
+        rm -rf temp-wrapper
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
