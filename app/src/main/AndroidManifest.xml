@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- 悬浮窗权限 -->
+    <!-- Floating window permission -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-    <!-- 前台服务权限（截屏服务需要） -->
+    <!-- Foreground service permission (required for screen capture service) -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <!-- Android 14+ 前台服务类型权限 -->
+    <!-- Android 14+ foreground service type permission -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
 
     <application
@@ -15,7 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AutoClicker">
 
-        <!-- 首页 -->
+        <!-- Home Page -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -25,28 +25,28 @@
             </intent-filter>
         </activity>
 
-        <!-- 连点器页面 -->
+        <!-- Auto Clicker Activity -->
         <activity
             android:name=".AutoClickerActivity"
             android:exported="false" />
 
-        <!-- 抢购页面 -->
+        <!-- Rush Buy Activity -->
         <activity
             android:name=".RushBuyActivity"
             android:exported="false" />
 
-        <!-- 抢票页面 -->
+        <!-- Ticket Grab Activity -->
         <activity
             android:name=".DaMaiTicketActivity"
             android:exported="false" />
 
-        <!-- 屏幕截屏服务（OCR 需要） -->
+        <!-- Screen Capture Service (Required for OCR) -->
         <service
             android:name=".ScreenCaptureService"
             android:exported="false"
             android:foregroundServiceType="mediaProjection" />
 
-        <!-- 无障碍服务 -->
+        <!-- Accessibility Service -->
         <service
             android:name=".ClickAccessibilityService"
             android:exported="true"
