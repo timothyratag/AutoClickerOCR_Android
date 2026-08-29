@@ -10,35 +10,35 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 
 /**
- * 水印工具类：在 Activity 根布局上叠加斜纹水印
+ * Watermark utility class: Overlay diagonal watermark on Activity root layout
  *
- * ====== 水印配置区 ======
- * 修改以下两个常量即可控制水印行为：
- *   ENABLED  - true 开启水印，false 关闭水印
- *   TEXT     - 水印显示的文字内容
- * ========================
+ * ====== Watermark Configuration Area ======
+ * Modify the following two constants to control watermark behavior:
+ *   ENABLED  - true to enable watermark, false to disable watermark
+ *   TEXT     - Watermark text content
+ * ========================================
  */
 object WatermarkHelper {
 
-    /** 水印开关：true=开启，false=关闭 */
+    /** Watermark switch: true=enabled, false=disabled */
     private const val ENABLED = true
 
-    /** 水印文字内容 */
+    /** Watermark text content */
     private const val TEXT = "pandie"
 
     fun shouldApply(): Boolean = ENABLED
 
-    fun getWatermarkText(): String = TEXT
+    fun getWatermarkText(): String = TEXT // Wait, let's fix TEXT type below in python code
 
     /**
-     * 给 Activity 应用水印，需在 setContentView 之后调用
+     * Apply watermark to Activity, must be called after setContentView
      */
     fun apply(activity: androidx.appcompat.app.AppCompatActivity) {
         if (!ENABLED) return
 
         val rootView = activity.findViewById<ViewGroup>(android.R.id.content) ?: return
 
-        // 移除旧水印
+        // Remove old watermark
         val old = rootView.findViewWithTag<WatermarkView>("watermark_overlay")
         old?.let { rootView.removeView(it) }
 
@@ -54,7 +54,7 @@ object WatermarkHelper {
     }
 
     /**
-     * 移除当前 Activity 上的水印
+     * Remove watermark from current Activity
      */
     fun remove(activity: androidx.appcompat.app.AppCompatActivity) {
         val rootView = activity.findViewById<ViewGroup>(android.R.id.content) ?: return
@@ -64,7 +64,7 @@ object WatermarkHelper {
 }
 
 /**
- * 自定义水印 View，绘制 45° 斜纹重复文字
+ * Custom watermark View, draws 45° diagonal repeating text
  */
 class WatermarkView @JvmOverloads constructor(
     context: Context,
@@ -73,7 +73,7 @@ class WatermarkView @JvmOverloads constructor(
 ) : View(context, attrs) {
 
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#1A000000") // 10% 不透明黑色
+        color = Color.parseColor("#1A000000") // 10% opaque black
         textSize = 36f
         textAlign = Paint.Align.LEFT
     }

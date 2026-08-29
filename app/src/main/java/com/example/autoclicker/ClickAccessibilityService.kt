@@ -78,7 +78,7 @@ class ClickAccessibilityService : AccessibilityService() {
 
         fun isOcrReady(): Boolean = instance != null
 
-        // ==================== 抢票引擎 ====================
+        // ==================== Ticket Grab Engine ====================
         fun getTicketGrabEngine(): TicketGrabEngine? = instance?.ticketGrabEngine
 
         fun startTicketGrab(config: TicketGrabEngine.Config) {
@@ -91,7 +91,7 @@ class ClickAccessibilityService : AccessibilityService() {
 
         fun isTicketGrabRunning(): Boolean = instance?.ticketGrabEngine?.isRunning() == true
 
-        // ==================== 抢票悬浮日志 ====================
+        // ==================== Floating Ticket Log ====================
         fun showFloatingLog() {
             instance?.showFloatingLogInternal()
         }
@@ -105,26 +105,26 @@ class ClickAccessibilityService : AccessibilityService() {
         }
     }
 
-    // ==================== 悬浮球相关 ====================
+    // ==================== Floating Ball ====================
     private var floatingView: View? = null
     private var floatingBallSizePx = 0
 
-    // 停止按钮（连点运行时显示）
+    // Stop button (shown when clicking is running)
     private var stopBtnView: View? = null
 
-    // ==================== 定位悬浮窗 ====================
+    // ==================== Locate Overlay Window ====================
     private var locateView: View? = null
     private var locateParams: WindowManager.LayoutParams? = null
     private var locatedCoordinates: Pair<Int, Int>? = null
     private var locateBallSizePx = 0
 
-    // ==================== 悬浮倒计时 ====================
+    // ==================== Floating Countdown ====================
     private var floatingTimeView: View? = null
     private var floatingTimeParams: WindowManager.LayoutParams? = null
     private var floatingTimeTextView: TextView? = null
     private var triggerTimeMs: Long = 0L
 
-    // ==================== 通用 ====================
+    // ==================== General ====================
     private var windowManager: WindowManager? = null
     private var handler: Handler? = null
     private var clickRunnable: Runnable? = null
@@ -135,15 +135,15 @@ class ClickAccessibilityService : AccessibilityService() {
     private var targetCount: Long = 0
     private var clickedCount: Long = 0
 
-    // 抢购模式
+    // Rush buy mode
     private var rushBuyX: Int = 0
     private var rushBuyY: Int = 0
     private var isRushBuyMode = false
 
-    // 抢票引擎
+    // Ticket grab engine
     private val ticketGrabEngine = TicketGrabEngine(this)
 
-    // ==================== 悬浮日志窗 ====================
+    // ==================== Floating Log Window ====================
     private var floatingLogView: View? = null
     private var floatingLogParams: WindowManager.LayoutParams? = null
     private var floatingLogTextView: TextView? = null
@@ -151,7 +151,7 @@ class ClickAccessibilityService : AccessibilityService() {
     private val logLines = mutableListOf<String>()
     private val maxLogLines = 50
 
-    // 触摸拖拽状态
+    // Touch drag state
     private var initialX = 0
     private var initialY = 0
     private var initialTouchX = 0f
@@ -159,21 +159,21 @@ class ClickAccessibilityService : AccessibilityService() {
     private var touchDownTime = 0L
     private var isLongPressTriggered = false
 
-    // 长按删除相关
+    // Long press delete related
     private val longPressTimeout = 800L
     private val longPressRunnable = Runnable {
         isLongPressTriggered = true
         removeFloatingWindow()
     }
 
-    // 定位悬浮窗触摸
+    // Locate overlay touch
     private var locateInitialX = 0
     private var locateInitialY = 0
     private var locateInitialTouchX = 0f
     private var locateInitialTouchY = 0f
     private var locateTouchDownTime = 0L
 
-    // ==================== 生命周期 ====================
+    // ==================== Lifecycle ====================
 
     override fun onServiceConnected() {
         super.onServiceConnected()
@@ -201,18 +201,18 @@ class ClickAccessibilityService : AccessibilityService() {
 
     override fun onAccessibilityEvent(event: android.view.accessibility.AccessibilityEvent?) {
         event ?: return
-        // 分发给抢票引擎
+        // Dispatch to ticket grab engine
         if (ticketGrabEngine.isRunning()) {
             ticketGrabEngine.onEvent(event)
         }
     }
     override fun onInterrupt() {}
 
-    // ==================== 悬浮球（三态交互）====================
+    // ==================== Floating Ball (Three-state interaction) ====================
     //
-    // 空闲态：悬浮球可拖动 + 可点击（点击进入连点态）
-    // 连点态：悬浮球 FLAG_NOT_TOUCHABLE（让 dispatchGesture 穿透）+ 显示停止按钮
-    // 停止态：恢复空闲态
+    // Idle state: Floating ball is draggable + clickable (click enters clicking state)
+    // Clicking state: Floating ball FLAG_NOT_TOUCHABLE (allows dispatchGesture to pass through) + shows stop button
+    // Stop state: Restores idle state
     //
 
     private fun showFloatingWindow() {
@@ -256,7 +256,7 @@ class ClickAccessibilityService : AccessibilityService() {
                 val dx = event.rawX - initialTouchX
                 val dy = event.rawY - initialTouchY
                 val dist = Math.sqrt((dx * dx + dy * dy).toDouble()).toFloat()
-                // 移动超过阈值则取消长按
+                // Cancel long press if movement exceeds threshold
                 if (dist > 10f) {
                     handler?.removeCallbacks(longPressRunnable)
                 }
@@ -279,7 +279,7 @@ class ClickAccessibilityService : AccessibilityService() {
                 val dur = System.currentTimeMillis() - touchDownTime
 
                 if (dist < 15f && dur < 500) {
-                    // 点击 → 开始连点
+                    // Tap -> Start clicking
                     startClickingInternal()
                 }
             }
@@ -292,7 +292,7 @@ class ClickAccessibilityService : AccessibilityService() {
         return true
     }
 
-    // ==================== 连点器核心 ====================
+    // ==================== Clicker Core ====================
 
     private fun startClickingInternal() {
         if (isClickingNow) return
@@ -305,16 +305,16 @@ class ClickAccessibilityService : AccessibilityService() {
         isInfiniteMode = prefs.getBoolean("click_infinite", true)
         targetCount = prefs.getLong("click_count", 100L)
 
-        // 1. 球变红
+        // 1. Ball turns red
         (floatingView as? FloatingButtonView)?.isActive = true
 
-        // 2. 球设为不可触摸（让 dispatchGesture 穿透到下层）
+        // 2. Ball set to not touchable (allows dispatchGesture to pass through to lower layers)
         setBallTouchable(false)
 
-        // 3. 显示停止按钮
+        // 3. Show stop button
         showStopButton()
 
-        // 4. 开始连点循环
+        // 4. Start clicking loop
         clickRunnable = object : Runnable {
             override fun run() {
                 if (!isClickingNow) return
@@ -345,13 +345,13 @@ class ClickAccessibilityService : AccessibilityService() {
         clickRunnable?.let { handler?.removeCallbacks(it) }
         clickRunnable = null
 
-        // 恢复球为空闲态
+        // Restore ball to idle state
         (floatingView as? FloatingButtonView)?.isActive = false
         setBallTouchable(true)
         removeStopButton()
     }
 
-    /** 连点器入口：显示悬浮球 */
+    /** Clicker entry: Show floating ball */
     private fun startClickingWithParamsInternal(interval: Long, isInfinite: Boolean, count: Long) {
         stopClickingInternal()
         intervalMs = interval
@@ -370,7 +370,7 @@ class ClickAccessibilityService : AccessibilityService() {
         }
     }
 
-    // ==================== 停止按钮 ====================
+    // ==================== Stop Button ====================
 
     private fun showStopButton() {
         if (stopBtnView != null) return
@@ -388,7 +388,7 @@ class ClickAccessibilityService : AccessibilityService() {
             background = bg
         }
 
-        // 停止按钮放在球的右侧
+        // Stop button placed to the right of the ball
         val ballLp = floatingView?.layoutParams as? WindowManager.LayoutParams
         val x = (ballLp?.x ?: 0) + floatingBallSizePx + dpToPx(8)
         val y = (ballLp?.y ?: 0) + (floatingBallSizePx - size) / 2
@@ -425,7 +425,7 @@ class ClickAccessibilityService : AccessibilityService() {
         try { windowManager?.updateViewLayout(view, lp) } catch (_: Exception) {}
     }
 
-    // ==================== 抢购模式坐标点击 ====================
+    // ==================== Rush Buy Mode Coordinate Click ====================
 
     private fun startRushBuyClickingInternal(x: Int, y: Int, interval: Long, count: Long) {
         stopClickingInternal()
@@ -455,7 +455,7 @@ class ClickAccessibilityService : AccessibilityService() {
         handler?.post(clickRunnable!!)
     }
 
-    // ==================== 定位悬浮窗 ====================
+    // ==================== Locate Overlay Window ====================
 
     private fun showLocateOverlayInternal(x: Int, y: Int) {
         removeLocateOverlayInternal()
@@ -465,7 +465,7 @@ class ClickAccessibilityService : AccessibilityService() {
 
         val ball = FloatingButtonView(this).apply {
             number = 1
-            ringColor = 0xFFFF9800.toInt()  // 橙色边框，定位风格
+            ringColor = 0xFFFF9800.toInt()  // Orange border, locate style
             textColor = 0xFFFF9800.toInt()
             isActive = false
         }
@@ -511,7 +511,7 @@ class ClickAccessibilityService : AccessibilityService() {
                 val duration = System.currentTimeMillis() - locateTouchDownTime
 
                 if (distance < 10f && duration < 300) {
-                    // 点击确认 → 记录中心坐标并移除
+                    // Tap to confirm -> Record center coordinates and remove
                     val loc = IntArray(2)
                     locateView?.getLocationOnScreen(loc)
                     val w = locateView?.width?.takeIf { it > 0 } ?: locateBallSizePx
@@ -530,7 +530,7 @@ class ClickAccessibilityService : AccessibilityService() {
         locateParams = null
     }
 
-    // ==================== 悬浮倒计时 ====================
+    // ==================== Floating Countdown ====================
 
     private fun showFloatingTimeInternal(triggerTime: Long) {
         removeFloatingTimeInternal()
@@ -624,7 +624,7 @@ class ClickAccessibilityService : AccessibilityService() {
         floatingTimeTextView = null
     }
 
-    // ==================== 悬浮日志窗 ====================
+    // ==================== Floating Log Window ====================
 
     private fun showFloatingLogInternal() {
         removeFloatingLogInternal()
@@ -637,7 +637,7 @@ class ClickAccessibilityService : AccessibilityService() {
 
         val container = FrameLayout(this)
 
-        // 标题栏
+        // Title bar
         val titleBar = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
@@ -645,13 +645,13 @@ class ClickAccessibilityService : AccessibilityService() {
                 setColor(0xE0E91E63.toInt())
                 cornerRadius = 12f * resources.displayMetrics.density
             }
-            // 只圆角顶部
+            // Rounded corners at top only
             background = bg
             setPadding(dpToPx(12), 0, dpToPx(8), 0)
         }
 
         val titleText = TextView(this).apply {
-            text = "抢票日志"
+            text = "Ticket Grab Log"
             setTextColor(0xFFFFFFFF.toInt())
             textSize = 13f
             setTypeface(typeface, android.graphics.Typeface.BOLD)
@@ -678,7 +678,7 @@ class ClickAccessibilityService : AccessibilityService() {
         titleBar.addView(collapseBtn)
         titleBar.addView(closeBtn)
 
-        // 日志内容区
+        // Log content area
         val logContent = ScrollView(this).apply {
             val bg = GradientDrawable().apply {
                 setColor(0xCC222222.toInt())
@@ -698,7 +698,7 @@ class ClickAccessibilityService : AccessibilityService() {
 
         logContent.addView(logTv)
 
-        // 组装容器
+        // Assemble container
         val innerLayout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             val bg = GradientDrawable().apply {
@@ -706,7 +706,7 @@ class ClickAccessibilityService : AccessibilityService() {
                 cornerRadius = 12f * resources.displayMetrics.density
             }
             background = bg
-            // 裁剪圆角
+            // Clip rounded corners
             clipToOutline = true
         }
         innerLayout.addView(titleBar, LinearLayout.LayoutParams(
@@ -732,7 +732,7 @@ class ClickAccessibilityService : AccessibilityService() {
             y = 100
         }
 
-        // 拖拽 & 按钮
+        // Drag & buttons
         var dragInitialX = 0
         var dragInitialY = 0
         var dragTouchX = 0f
@@ -760,21 +760,21 @@ class ClickAccessibilityService : AccessibilityService() {
                 }
                 MotionEvent.ACTION_UP -> {
                     if (!isDrag) {
-                        // 点击标题栏不做任何事
+                        // Clicking title bar does nothing
                     }
                 }
             }
             true
         }
 
-        // 折叠/展开按钮
+        // Collapse/Expand button
         collapseBtn.setOnClickListener {
             floatingLogCollapsed = !floatingLogCollapsed
             logContent.visibility = if (floatingLogCollapsed) View.GONE else View.VISIBLE
             collapseBtn.text = if (floatingLogCollapsed) "+" else "−"
         }
 
-        // 关闭按钮 — 停止抢票并关闭日志
+        // Close button — Stop ticket grabbing and close log
         closeBtn.setOnClickListener {
             ticketGrabEngine.stop()
             removeFloatingLogInternal()
@@ -797,8 +797,9 @@ class ClickAccessibilityService : AccessibilityService() {
         }
 
         try {
-            tv.text = logLines.joinToString("\n")
-            // 滚动到底部
+            tv.text = logLines.joinToString("
+")
+            // Scroll to bottom
             val sv = tv.parent as? ScrollView
             sv?.post { sv.fullScroll(View.FOCUS_DOWN) }
         } catch (_: Exception) {}
@@ -812,7 +813,7 @@ class ClickAccessibilityService : AccessibilityService() {
         logLines.clear()
     }
 
-    // ==================== 通用方法 ====================
+    // ==================== General Methods ====================
 
     private fun performClickAt(x: Float, y: Float) {
         val path = Path().apply {
@@ -836,7 +837,7 @@ class ClickAccessibilityService : AccessibilityService() {
         isLongPressTriggered = false
     }
 
-    /** 创建标准 overlay LayoutParams */
+    /** Create standard overlay LayoutParams */
     private fun createOverlayParams(width: Int, height: Int): WindowManager.LayoutParams {
         return WindowManager.LayoutParams(
             width, height,

@@ -30,8 +30,8 @@ import android.widget.TextView
 import androidx.core.app.NotificationCompat
 
 /**
- * 屏幕截屏前台服务
- * 负责 MediaProjection 管理、事件驱动截屏、OCR 识别和自动点击
+ * Screen capture foreground service
+ * Responsible for MediaProjection management, event-driven screen capture, OCR recognition, and auto-clicking
  */
 class ScreenCaptureService : Service() {
 
@@ -41,23 +41,23 @@ class ScreenCaptureService : Service() {
         private const val CHANNEL_ID = "screen_capture_channel"
         private const val NOTIFICATION_ID = 1001
 
-        // Intent 参数键
+        // Intent parameter keys
         const val EXTRA_TARGET_TEXT = "target_text"
         const val EXTRA_SCAN_INTERVAL = "scan_interval"
         const val EXTRA_CLICK_COUNT = "click_count"
         const val EXTRA_EXACT_MATCH = "exact_match"
         const val EXTRA_CLICK_INTERVAL = "click_interval"
 
-        // 操作类型
+        // Action types
         const val ACTION_START = "action_start"
         const val ACTION_STOP = "action_stop"
 
-        // MediaProjection 授权数据必须通过静态变量传递
+        // MediaProjection auth data must be passed via static variables
         @Volatile
         var projectionResultCode: Int = -1
         var projectionResultData: Intent? = null
 
-        // 状态查询
+        // Status queries
         @Volatile
         var isRunning = false
             private set
@@ -78,7 +78,7 @@ class ScreenCaptureService : Service() {
         var ocrScanCount: Long = 0
             private set
 
-        // ===== 诊断日志 =====
+        // ===== Diagnostic log =====
         @Volatile
         var diagLog: String = ""
             private set
@@ -86,11 +86,14 @@ class ScreenCaptureService : Service() {
         private fun diag(msg: String) {
             Log.d(TAG, msg)
             val ts = System.currentTimeMillis() % 100000
-            diagLog = "[$ts] $msg\n" + diagLog
-            // 保留最近 30 条
-            val lines = diagLog.split("\n")
+            diagLog = "[$ts] $msg
+" + diagLog
+            // Keep recent 30 entries
+            val lines = diagLog.split("
+")
             if (lines.size > 31) {
-                diagLog = lines.take(30).joinToString("\n")
+                diagLog = lines.take(30).joinToString("
+")
             }
         }
 
@@ -126,7 +129,7 @@ class ScreenCaptureService : Service() {
     private var frameNullCount = 0L
     private var bitmapNullCount = 0L
 
-    // ===== 悬浮停止按钮 =====
+    // ===== Floating stop button =====
     private var floatingView: View? = null
     private var windowManager: WindowManager? = null
 
@@ -161,11 +164,11 @@ class ScreenCaptureService : Service() {
             exactMatch = intent.getBooleanExtra(EXTRA_EXACT_MATCH, false)
             clickInterval = intent.getLongExtra(EXTRA_CLICK_INTERVAL, 100L).coerceIn(50L, 60000L)
 
-            diag("params: target=\"$targetText\" interval=${scanInterval}ms count=$clickCount exact=$exactMatch")
+            diag("params: target="$targetText" interval=${scanInterval}ms count=$clickCount exact=$exactMatch")
             diag("projection: resultCode=$resultCode data=${resultData != null}")
 
-            // 启动前台通知（必须在 getMediaProjection 之前）
-            val notification = buildNotification("OCR识别运行中...")
+            // Start foreground notification (must be before getMediaProjection)
+            val notification = buildNotification("OCR recognition running...")
             startForeground(NOTIFICATION_ID, notification)
             diag("startForeground() OK")
 
@@ -174,17 +177,17 @@ class ScreenCaptureService : Service() {
                 mediaProjection = projectionManager.getMediaProjection(resultCode, resultData)
 
                 if (mediaProjection != null) {
-                    diag("✅ getMediaProjection 成功!")
+                    diag("✅ getMediaProjection success!")
                     setupVirtualDisplay()
                     isRunning = true
                     showFloatingStopButton()
-                    diag("✅ 服务启动完成，等待帧...")
+                    diag("✅ Service started, waiting for frames...")
                 } else {
-                    diag("❌ getMediaProjection 返回 null! resultCode=$resultCode")
+                    diag("❌ getMediaProjection returned null! resultCode=$resultCode")
                     stopSelf()
                 }
             } else {
-                diag("❌ 缺少投影授权: resultCode=$resultCode, data=${resultData != null}")
+                diag("❌ Missing projection authorization: resultCode=$resultCode, data=${resultData != null}")
                 stopSelf()
             }
         }
@@ -210,7 +213,7 @@ class ScreenCaptureService : Service() {
         bitmapNullCount = 0
     }
 
-    // ==================== 悬浮停止按钮 ====================
+    // ==================== Floating Stop Button ====================
 
     private fun showFloatingStopButton() {
         if (floatingView != null) return
@@ -219,7 +222,7 @@ class ScreenCaptureService : Service() {
 
         val container = FrameLayout(this)
         val btn = TextView(this).apply {
-            text = "■ 停止"
+            text = "■ Stop"
             setTextColor(0xFFFFFFFF.toInt())
             textSize = 13f
             setTypeface(typeface, android.graphics.Typeface.BOLD)
@@ -243,9 +246,9 @@ class ScreenCaptureService : Service() {
         container.addView(btn, wrap)
         container.setPadding(4, 4, 4, 4)
 
-        // 点击停止
+        // Click to stop
         btn.setOnClickListener {
-            diag("悬浮按钮 → 停止")
+            diag("Floating button → Stop")
             stopCapture()
             val stopIntent = Intent(this, ScreenCaptureService::class.java).apply {
                 action = ACTION_STOP
@@ -253,7 +256,7 @@ class ScreenCaptureService : Service() {
             startService(stopIntent)
         }
 
-        // 拖动支持
+        // Drag support
         var initialX = 0
         var initialY = 0
         var initialTouchX = 0f
@@ -302,7 +305,7 @@ class ScreenCaptureService : Service() {
         container.tag = intArrayOf(params.x, params.y)
         windowManager?.addView(container, params)
         floatingView = container
-        diag("✅ 悬浮停止按钮已显示")
+        diag("✅ Floating stop button shown")
     }
 
     private fun removeFloatingStopButton() {
@@ -311,11 +314,11 @@ class ScreenCaptureService : Service() {
                 windowManager?.removeView(it)
             } catch (_: Exception) {}
             floatingView = null
-            diag("悬浮停止按钮已移除")
+            diag("Floating stop button removed")
         }
     }
 
-    // ==================== 虚拟显示器 ====================
+    // ==================== Virtual Display ====================
 
     private fun setupVirtualDisplay() {
         val windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
@@ -327,12 +330,12 @@ class ScreenCaptureService : Service() {
         diag("screen: ${screenWidth}x${screenHeight} density=$screenDensity")
 
         imageReader = ImageReader.newInstance(screenWidth, screenHeight, PixelFormat.RGBA_8888, 2)
-        diag("ImageReader 创建: ${screenWidth}x${screenHeight} format=RGBA_8888")
+        diag("ImageReader created: ${screenWidth}x${screenHeight} format=RGBA_8888")
 
         imageReader?.setOnImageAvailableListener({ reader ->
             frameAvailableCount++
             if (frameAvailableCount <= 5) {
-                diag("帧到达 #${frameAvailableCount}")
+                diag("Frame arrived #${frameAvailableCount}")
             }
 
             if (!isRunning) {
@@ -363,9 +366,9 @@ class ScreenCaptureService : Service() {
         )
 
         if (virtualDisplay != null) {
-            diag("✅ VirtualDisplay 创建成功")
+            diag("✅ VirtualDisplay created successfully")
         } else {
-            diag("❌ VirtualDisplay 创建失败! mediaProjection=${mediaProjection != null}")
+            diag("❌ VirtualDisplay creation failed! mediaProjection=${mediaProjection != null}")
         }
     }
 
@@ -377,7 +380,7 @@ class ScreenCaptureService : Service() {
         imageReader = null
     }
 
-    // ==================== 帧处理 ====================
+    // ==================== Frame Processing ====================
 
     private fun processFrame(reader: ImageReader) {
         var image: Image? = null
@@ -386,7 +389,7 @@ class ScreenCaptureService : Service() {
             if (image == null) {
                 frameNullCount++
                 if (frameNullCount <= 3) {
-                    diag("⚠️ acquireLatestImage 返回 null (第${frameNullCount}次)")
+                    diag("⚠️ acquireLatestImage returned null (${frameNullCount}th time)")
                 }
                 return
             }
@@ -404,7 +407,7 @@ class ScreenCaptureService : Service() {
             if (bitmap == null) {
                 bitmapNullCount++
                 if (bitmapNullCount <= 3) {
-                    diag("⚠️ imageToBitmap 返回 null (第${bitmapNullCount}次) imgSize=${imgW}x${imgH} pixelStride=$pixelStride rowStride=$rowStride")
+                    diag("⚠️ imageToBitmap returned null (${bitmapNullCount}th time) imgSize=${imgW}x${imgH} pixelStride=$pixelStride rowStride=$rowStride")
                 }
                 return
             }
@@ -412,7 +415,7 @@ class ScreenCaptureService : Service() {
             ocrScanCount++
 
             if (ocrScanCount <= 3) {
-                diag("帧处理 #${ocrScanCount}: bitmap=${bitmap.width}x${bitmap.height}")
+                diag("Frame process #${ocrScanCount}: bitmap=${bitmap.width}x${bitmap.height}")
             }
 
             isProcessing = true
@@ -424,22 +427,22 @@ class ScreenCaptureService : Service() {
 
                 if (ocrScanCount <= 5 || result.matched) {
                     val textPreview = if (result.allText.length > 80) result.allText.take(80) + "..." else result.allText
-                    diag("OCR #${ocrScanCount}: matched=${result.matched} textBlocks=${OcrClickEngine.lastBlockCount} text=\"${textPreview}\"")
+                    diag("OCR #${ocrScanCount}: matched=${result.matched} textBlocks=${OcrClickEngine.lastBlockCount} text="${textPreview}"")
                 }
 
                 if (result.matched && !isClickingAfterMatch) {
-                    diag("🎯 匹配成功! center=(${result.centerX},${result.centerY}) rect=${result.boundingRect}")
+                    diag("🎯 Match successful! center=(${result.centerX},${result.centerY}) rect=${result.boundingRect}")
                     onTextMatched(result)
                 }
 
                 updateNotification(
-                    if (result.matched) "已找到: \"${result.targetText}\""
-                    else "扫描中... (第${ocrScanCount}次)"
+                    if (result.matched) "Found: "${result.targetText}""
+                    else "Scanning... (scan #${ocrScanCount})"
                 )
             }
         } catch (e: Exception) {
             isProcessing = false
-            diag("❌ processFrame 异常: ${e.message}")
+            diag("❌ processFrame exception: ${e.message}")
             e.printStackTrace()
         } finally {
             image?.close()
@@ -447,7 +450,7 @@ class ScreenCaptureService : Service() {
     }
 
     /**
-     * Image 转 Bitmap，处理行填充
+     * Convert Image to Bitmap, handle row padding
      */
     private fun imageToBitmap(image: Image): Bitmap? {
         return try {
@@ -473,7 +476,7 @@ class ScreenCaptureService : Service() {
         }
     }
 
-    // ==================== 文字匹配后点击 ====================
+    // ==================== Click After Text Match ====================
 
     private fun onTextMatched(result: OcrClickEngine.MatchResult) {
         isClickingAfterMatch = true
@@ -482,7 +485,7 @@ class ScreenCaptureService : Service() {
         clickRunnable = object : Runnable {
             override fun run() {
                 if (!isRunning || clickedCount >= clickCount) {
-                    diag("点击完成: clicked=$clickedCount/$clickCount")
+                    diag("Clicking finished: clicked=$clickedCount/$clickCount")
                     stopClickLoop()
                     return
                 }
@@ -507,15 +510,15 @@ class ScreenCaptureService : Service() {
         isClickingAfterMatch = false
     }
 
-    // ==================== 通知 ====================
+    // ==================== Notification ====================
 
     private fun createNotificationChannel() {
         val channel = NotificationChannel(
             CHANNEL_ID,
-            "OCR屏幕识别服务",
+            "OCR Screen Recognition Service",
             NotificationManager.IMPORTANCE_LOW
         ).apply {
-            description = "OCR文字识别与自动点击服务运行通知"
+            description = "OCR text recognition and auto-clicking service notification"
             setShowBadge(false)
         }
         val manager = getSystemService(NotificationManager::class.java)

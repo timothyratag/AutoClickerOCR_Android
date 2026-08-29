@@ -8,8 +8,8 @@ import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions
 
 /**
- * OCR 文字识别与匹配引擎
- * 负责截屏文字识别、目标文字匹配、匹配区域中心坐标计算
+ * OCR text recognition and matching engine
+ * Responsible for screen capture text recognition, target text matching, matching area center coordinate calculation
  */
 object OcrClickEngine {
 
@@ -17,17 +17,17 @@ object OcrClickEngine {
 
     private val recognizer = TextRecognition.getClient(ChineseTextRecognizerOptions.Builder().build())
 
-    // 诊断：最近一次识别的 block 数
+    // Diagnostics: block count of last recognition
     @Volatile
     var lastBlockCount: Int = 0
         private set
 
-    // 诊断：最近一次 OCR 错误
+    // Diagnostics: last OCR error
     @Volatile
     var lastError: String = ""
         private set
 
-    /** 匹配结果 */
+    /** Match result */
     data class MatchResult(
         val matched: Boolean,
         val targetText: String,
@@ -38,13 +38,13 @@ object OcrClickEngine {
         val allText: String = ""
     )
 
-    /** OCR 回调接口（fun interface 支持 SAM 转换） */
+    /** OCR callback interface (fun interface supports SAM conversion) */
     fun interface OcrCallback {
         fun onResult(result: MatchResult)
     }
 
     /**
-     * 对 Bitmap 执行 OCR 识别，查找目标文字
+     * Perform OCR recognition on Bitmap to find target text
      */
     fun recognizeAndMatch(
         bitmap: Bitmap,
@@ -62,7 +62,7 @@ object OcrClickEngine {
             .addOnSuccessListener { visionText ->
                 lastBlockCount = visionText.textBlocks.size
                 val blockCount = visionText.textBlocks.size
-                Log.d(TAG, "OCR成功: blocks=$blockCount, textLen=${visionText.text.length}")
+                Log.d(TAG, "OCR success: blocks=$blockCount, textLen=${visionText.text.length}")
 
                 val result = findMatchInText(visionText.text, visionText, targetText, exactMatch)
                 callback.onResult(result)
@@ -70,13 +70,13 @@ object OcrClickEngine {
             .addOnFailureListener { e ->
                 lastError = e.message ?: "unknown"
                 lastBlockCount = 0
-                Log.e(TAG, "OCR失败: ${e.message}", e)
+                Log.e(TAG, "OCR failure: ${e.message}", e)
                 callback.onResult(MatchResult(matched = false, targetText = targetText))
             }
     }
 
     /**
-     * 在识别结果中查找匹配文字并计算中心坐标
+     * Find matching text in recognition results and calculate center coordinates
      */
     private fun findMatchInText(
         fullText: String,
@@ -138,7 +138,7 @@ object OcrClickEngine {
     }
 
     /**
-     * 查找所有匹配的位置（用于多次匹配场景）
+     * Find all matching positions (for multi-match scenarios)
      */
     fun findAllMatches(
         bitmap: Bitmap,

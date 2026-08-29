@@ -7,12 +7,12 @@ import android.util.AttributeSet
 import android.view.View
 
 /**
- * 悬浮准星按钮组件（纯视觉）
+ * Floating crosshair button component (pure visual)
  *
- * 视觉样式：圆形边框 + 中心数字 + 十字准星（上下左右四向短线）+ 黄色锚点
- * 点击锚点精确定位在视觉几何中心。
+ * Visual style: Circular border + center number + crosshair (short lines in 4 directions: top, bottom, left, right) + yellow anchor
+ * Click anchor precisely positioned at the visual geometric center.
  *
- * 触摸交互由外部 setOnTouchListener 驱动（WindowManager overlay 场景最可靠）。
+ * Touch interaction is driven externally by setOnTouchListener (most reliable for WindowManager overlay scenarios).
  */
 class FloatingButtonView @JvmOverloads constructor(
     context: Context,
@@ -20,7 +20,7 @@ class FloatingButtonView @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
 
-    // ==================== 可配置属性 ====================
+    // ==================== Configurable Properties ====================
 
     var number: Int = 1
         set(value) { field = value; invalidate() }
@@ -52,7 +52,7 @@ class FloatingButtonView @JvmOverloads constructor(
             invalidate()
         }
 
-    // ==================== 尺寸 ====================
+    // ==================== Dimensions ====================
 
     private val density: Float = context.resources.displayMetrics.density
 
@@ -94,7 +94,7 @@ class FloatingButtonView @JvmOverloads constructor(
         color = 0xFFFFFF00.toInt()
     }
 
-    // ==================== 绘制 ====================
+    // ==================== Drawing ====================
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
@@ -103,22 +103,22 @@ class FloatingButtonView @JvmOverloads constructor(
         val cy = height / 2f
         val r = minOf(width, height) / 2f - ringStrokeWidthPx / 2f
 
-        // 填充
+        // Fill
         canvas.drawCircle(cx, cy, r, fillPaint)
-        // 圆边框
+        // Circle border
         canvas.drawCircle(cx, cy, r / 2f, ringPaint)
 
-        // 十字准星（从数字边缘延伸至圆环内侧）
+        // Crosshairs (extended from number edge to inside the ring)
         val innerGap = textSizePx * 0.35f
         canvas.drawLine(cx, cy - innerGap, cx, cy - r + ringStrokeWidthPx, crosshairPaint)
         canvas.drawLine(cx, cy + innerGap, cx, cy + r - ringStrokeWidthPx, crosshairPaint)
         canvas.drawLine(cx - innerGap, cy, cx - r + ringStrokeWidthPx, cy, crosshairPaint)
         canvas.drawLine(cx + innerGap, cy, cx + r - ringStrokeWidthPx, cy, crosshairPaint)
 
-        // 中心数字
+        // Center number
         canvas.drawText(number.toString(), cx, cy - (textPaint.descent() + textPaint.ascent()) / 2f, textPaint)
 
-        // 点击锚点（黄色圆点）
+        // Click anchor (yellow dot)
         canvas.drawCircle(cx, cy, anchorRadiusPx, anchorPaint)
     }
 }

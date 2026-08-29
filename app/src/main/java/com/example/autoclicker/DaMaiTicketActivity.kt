@@ -21,35 +21,35 @@ import androidx.appcompat.app.AppCompatActivity
 
 class DaMaiTicketActivity : AppCompatActivity() {
 
-    // 标题栏
+    // Title bar
     private lateinit var btnBack: ImageView
 
-    // 场次配置
+    // Session configuration
     private lateinit var etSessions: EditText
     private lateinit var btnAddSession: Button
 
-    // 价格档位配置
+    // Price tier configuration
     private lateinit var etPrices: EditText
     private lateinit var btnAddPrice: Button
 
-    // 观演人配置
+    // Viewer configuration
     private lateinit var etViewers: EditText
     private lateinit var btnAddViewer: Button
 
-    // 高级参数
+    // Advanced parameters
     private lateinit var etRetryInterval: EditText
     private lateinit var etMaxRetries: EditText
 
-    // 操作按钮
+    // Action buttons
     private lateinit var btnStart: Button
     private lateinit var btnStop: Button
 
-    // 状态显示
+    // Status display
     private lateinit var tvState: TextView
     private lateinit var tvStatus: TextView
     private lateinit var tvAttemptCount: TextView
 
-    // 标签容器
+    // Tag containers
     private lateinit var layoutSessionTags: LinearLayout
     private lateinit var layoutPriceTags: LinearLayout
     private lateinit var layoutViewerTags: LinearLayout
@@ -57,7 +57,7 @@ class DaMaiTicketActivity : AppCompatActivity() {
     private val handler = Handler(Looper.getMainLooper())
     private var statusRunnable: Runnable? = null
 
-    // 配置数据
+    // Configuration data
     private val sessions = mutableListOf<String>()
     private val prices = mutableListOf<String>()
     private val viewers = mutableListOf<String>()
@@ -100,7 +100,7 @@ class DaMaiTicketActivity : AppCompatActivity() {
     private fun setupListeners() {
         btnBack.setOnClickListener { finish() }
 
-        // 添加场次
+        // Add session
         btnAddSession.setOnClickListener {
             val text = etSessions.text.toString().trim()
             if (text.isNotEmpty() && !sessions.contains(text)) {
@@ -110,7 +110,7 @@ class DaMaiTicketActivity : AppCompatActivity() {
             }
         }
 
-        // 添加价格
+        // Add price
         btnAddPrice.setOnClickListener {
             val text = etPrices.text.toString().trim()
             if (text.isNotEmpty() && !prices.contains(text)) {
@@ -120,7 +120,7 @@ class DaMaiTicketActivity : AppCompatActivity() {
             }
         }
 
-        // 添加观演人
+        // Add viewer
         btnAddViewer.setOnClickListener {
             val text = etViewers.text.toString().trim()
             if (text.isNotEmpty() && !viewers.contains(text)) {
@@ -130,19 +130,19 @@ class DaMaiTicketActivity : AppCompatActivity() {
             }
         }
 
-        // 开始抢票
+        // Start ticket grab
         btnStart.setOnClickListener {
             if (!checkPermissions()) return@setOnClickListener
             if (sessions.isEmpty()) {
-                Toast.makeText(this, "请至少添加一个场次", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Please add at least one session", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
             if (prices.isEmpty()) {
-                Toast.makeText(this, "请至少添加一个价格档位", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Please add at least one price tier", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
             if (viewers.isEmpty()) {
-                Toast.makeText(this, "请至少添加一个观演人", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Please add at least one viewer", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -150,7 +150,7 @@ class DaMaiTicketActivity : AppCompatActivity() {
             startTicketGrab()
         }
 
-        // 停止抢票
+        // Stop ticket grab
         btnStop.setOnClickListener {
             ClickAccessibilityService.stopTicketGrab()
             updateUI()
@@ -176,7 +176,7 @@ class DaMaiTicketActivity : AppCompatActivity() {
 
     private fun checkPermissions(): Boolean {
         if (!Settings.canDrawOverlays(this)) {
-            Toast.makeText(this, "请先开启悬浮窗权限", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Please enable floating window permission first", Toast.LENGTH_SHORT).show()
             startActivity(Intent(
                 Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                 Uri.parse("package:$packageName")
@@ -184,7 +184,7 @@ class DaMaiTicketActivity : AppCompatActivity() {
             return false
         }
         if (!ClickAccessibilityService.isRunning()) {
-            Toast.makeText(this, "请先开启无障碍服务", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Please enable Accessibility Service first", Toast.LENGTH_SHORT).show()
             startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
             return false
         }
@@ -202,20 +202,20 @@ class DaMaiTicketActivity : AppCompatActivity() {
 
         val engine = ClickAccessibilityService.getTicketGrabEngine()
         if (engine == null) {
-            Toast.makeText(this, "无障碍服务未就绪", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Accessibility service not ready", Toast.LENGTH_SHORT).show()
             return
         }
 
         engine.onStateChanged = { state, msg ->
             handler.post {
                 tvState.text = when (state) {
-                    TicketGrabEngine.State.IDLE -> "空闲"
-                    TicketGrabEngine.State.ENTERING_PAGE -> "进入选票页"
-                    TicketGrabEngine.State.SELECTING_SESSION -> "选择场次"
-                    TicketGrabEngine.State.SELECTING_PRICE -> "选择价格"
-                    TicketGrabEngine.State.SELECTING_VIEWERS -> "选择观演人"
-                    TicketGrabEngine.State.SUBMITTING_ORDER -> "提交订单"
-                    TicketGrabEngine.State.DONE -> "完成"
+                    TicketGrabEngine.State.IDLE -> "Idle"
+                    TicketGrabEngine.State.ENTERING_PAGE -> "Entering ticket page"
+                    TicketGrabEngine.State.SELECTING_SESSION -> "Selecting session"
+                    TicketGrabEngine.State.SELECTING_PRICE -> "Selecting price"
+                    TicketGrabEngine.State.SELECTING_VIEWERS -> "Selecting viewers"
+                    TicketGrabEngine.State.SUBMITTING_ORDER -> "Submitting order"
+                    TicketGrabEngine.State.DONE -> "Done"
                 }
                 tvStatus.text = msg
             }
@@ -224,14 +224,14 @@ class DaMaiTicketActivity : AppCompatActivity() {
         ClickAccessibilityService.startTicketGrab(cfg)
         updateUI()
 
-        // 切换到大麦 APP
+        // Switch to Damai APP
         val pm = packageManager
         val launchIntent = pm.getLaunchIntentForPackage("cn.damai")
         if (launchIntent != null) {
             startActivity(launchIntent)
-            Toast.makeText(this, "已启动大麦 APP，抢票进行中...", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Damai APP launched, grabbing tickets...", Toast.LENGTH_LONG).show()
         } else {
-            Toast.makeText(this, "未检测到大麦 APP，请手动打开", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Damai APP not detected, please open manually", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -244,33 +244,33 @@ class DaMaiTicketActivity : AppCompatActivity() {
             btnStop.isEnabled = true
             val state = engine!!.state
             tvState.text = when (state) {
-                TicketGrabEngine.State.IDLE -> "空闲"
-                TicketGrabEngine.State.ENTERING_PAGE -> "进入选票页"
-                TicketGrabEngine.State.SELECTING_SESSION -> "选择场次"
-                TicketGrabEngine.State.SELECTING_PRICE -> "选择价格"
-                TicketGrabEngine.State.SELECTING_VIEWERS -> "选择观演人"
-                TicketGrabEngine.State.SUBMITTING_ORDER -> "提交订单"
-                TicketGrabEngine.State.DONE -> "完成"
+                TicketGrabEngine.State.IDLE -> "Idle"
+                TicketGrabEngine.State.ENTERING_PAGE -> "Entering ticket page"
+                TicketGrabEngine.State.SELECTING_SESSION -> "Selecting session"
+                TicketGrabEngine.State.SELECTING_PRICE -> "Selecting price"
+                TicketGrabEngine.State.SELECTING_VIEWERS -> "Selecting viewers"
+                TicketGrabEngine.State.SUBMITTING_ORDER -> "Submitting order"
+                TicketGrabEngine.State.DONE -> "Done"
             }
             tvStatus.text = engine.statusMessage
-            tvAttemptCount.text = "尝试次数: ${engine.attemptCount}"
+            tvAttemptCount.text = "Attempts: ${engine.attemptCount}"
             tvAttemptCount.visibility = View.VISIBLE
         } else {
             btnStart.isEnabled = true
             btnStop.isEnabled = false
             if (engine?.state == TicketGrabEngine.State.DONE) {
-                tvState.text = "完成"
+                tvState.text = "Done"
                 tvStatus.text = engine.statusMessage
             } else {
-                tvState.text = "空闲"
-                tvStatus.text = "就绪"
+                tvState.text = "Idle"
+                tvStatus.text = "Ready"
             }
             tvAttemptCount.visibility = View.GONE
         }
     }
 
     /**
-     * 刷新标签列表
+     * Refresh tag list
      */
     private fun refreshTags(container: LinearLayout, items: List<String>, onRemove: ((String) -> Unit)?) {
         container.removeAllViews()
@@ -300,32 +300,32 @@ class DaMaiTicketActivity : AppCompatActivity() {
     private fun loadSettings() {
         val prefs = getSharedPreferences("damai_ticket_prefs", Context.MODE_PRIVATE)
 
-        // 场次
+        // Sessions
         val sessionStr = prefs.getString("sessions", "") ?: ""
         if (sessionStr.isNotEmpty()) {
             sessions.clear()
             sessions.addAll(sessionStr.split(",").filter { it.isNotEmpty() })
         }
 
-        // 价格
+        // Prices
         val priceStr = prefs.getString("prices", "") ?: ""
         if (priceStr.isNotEmpty()) {
             prices.clear()
             prices.addAll(priceStr.split(",").filter { it.isNotEmpty() })
         }
 
-        // 观演人
+        // Viewers
         val viewerStr = prefs.getString("viewers", "") ?: ""
         if (viewerStr.isNotEmpty()) {
             viewers.clear()
             viewers.addAll(viewerStr.split(",").filter { it.isNotEmpty() })
         }
 
-        // 高级参数
+        // Advanced parameters
         etRetryInterval.setText(prefs.getLong("retry_interval", 300L).toString())
         etMaxRetries.setText(prefs.getInt("max_retries", 200).toString())
 
-        // 刷新标签
+        // Refresh tags
         refreshTags(layoutSessionTags, sessions, null)
         refreshTags(layoutPriceTags, prices, null)
         refreshTags(layoutViewerTags, viewers, null)

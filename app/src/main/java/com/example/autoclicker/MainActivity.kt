@@ -48,30 +48,30 @@ class MainActivity : AppCompatActivity() {
         tabTicket = findViewById(R.id.tabTicket)
         btnSettings = findViewById(R.id.btnSettings)
 
-        // 无障碍服务开关
+        // Accessibility service switch
         switchAccessibility.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked && !isAccessibilityServiceEnabled()) {
-                // 跳转无障碍设置
-                Toast.makeText(this, "请在设置中开启 AutoClicker 服务", Toast.LENGTH_LONG).show()
+                // Go to accessibility settings
+                Toast.makeText(this, "Please enable AutoClicker service in settings", Toast.LENGTH_LONG).show()
                 startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
             } else if (!isChecked && isAccessibilityServiceEnabled()) {
-                // 停止无障碍服务
+                // Stop accessibility service
                 ClickAccessibilityService.stopService()
             }
         }
 
-        // 悬浮窗权限开关
+        // Floating window permission switch
         switchOverlay.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked && !Settings.canDrawOverlays(this)) {
-                // 跳转悬浮窗权限设置
+                // Go to floating window permission settings
                 val intent = Intent(
                     Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                     Uri.parse("package:$packageName")
                 )
                 overlayPermissionLauncher.launch(intent)
             } else if (!isChecked && Settings.canDrawOverlays(this)) {
-                // 无法通过代码撤销悬浮窗权限，引导用户手动关闭
-                Toast.makeText(this, "请手动关闭悬浮窗权限", Toast.LENGTH_SHORT).show()
+                // Cannot revoke floating window permission programmatically, guide user to close manually
+                Toast.makeText(this, "Please manually disable floating window permission", Toast.LENGTH_SHORT).show()
                 val intent = Intent(
                     Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                     Uri.parse("package:$packageName")
@@ -80,22 +80,22 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // 底部工具栏 - 连点器入口
+        // Bottom toolbar - Clicker entry
         tabClicker.setOnClickListener {
             startActivity(Intent(this, AutoClickerActivity::class.java))
         }
 
-        // 底部工具栏 - 抢购入口
+        // Bottom toolbar - Rush buy entry
         tabRushBuy.setOnClickListener {
             startActivity(Intent(this, RushBuyActivity::class.java))
         }
 
-        // 底部工具栏 - 抢票入口
+        // Bottom toolbar - Ticket entry
         tabTicket.setOnClickListener {
             startActivity(Intent(this, DaMaiTicketActivity::class.java))
         }
 
-        // 设置按钮
+        // Settings button
         btnSettings.setOnClickListener { view ->
             val popup = PopupMenu(this, view)
             popup.menuInflater.inflate(R.menu.menu_settings, popup.menu)
@@ -111,7 +111,7 @@ class MainActivity : AppCompatActivity() {
                         AlertDialog.Builder(this)
                             .setTitle(R.string.usage_guide_title)
                             .setView(dialogView)
-                            .setPositiveButton("知道了", null)
+                            .setPositiveButton("Got it", null)
                             .show()
                         true
                     }
@@ -119,7 +119,7 @@ class MainActivity : AppCompatActivity() {
                         AlertDialog.Builder(this)
                             .setTitle(R.string.about_title)
                             .setMessage(R.string.about_content)
-                            .setPositiveButton("确定", null)
+                            .setPositiveButton("OK", null)
                             .show()
                         true
                     }
@@ -136,36 +136,36 @@ class MainActivity : AppCompatActivity() {
         WatermarkHelper.apply(this)
     }
 
-    /** 更新权限状态显示 */
+    /** Update permission status display */
     private fun updatePermissionStatus() {
         val accessibilityEnabled = isAccessibilityServiceEnabled()
         val overlayEnabled = Settings.canDrawOverlays(this)
 
-        // 更新无障碍服务状态
+        // Update accessibility service status
         switchAccessibility.setOnCheckedChangeListener(null)
         switchAccessibility.isChecked = accessibilityEnabled
-        tvAccessibilityStatus.text = if (accessibilityEnabled) "已开启" else "未开启"
+        tvAccessibilityStatus.text = if (accessibilityEnabled) "Enabled" else "Disabled"
         tvAccessibilityStatus.setTextColor(
             getColor(if (accessibilityEnabled) R.color.status_on else R.color.status_off)
         )
-        // 重新绑定监听器
+        // Re-bind listener
         switchAccessibility.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked && !isAccessibilityServiceEnabled()) {
-                Toast.makeText(this, "请在设置中开启 AutoClicker 服务", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Please enable AutoClicker service in settings", Toast.LENGTH_LONG).show()
                 startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
             } else if (!isChecked && isAccessibilityServiceEnabled()) {
                 ClickAccessibilityService.stopService()
             }
         }
 
-        // 更新悬浮窗权限状态
+        // Update floating window permission status
         switchOverlay.setOnCheckedChangeListener(null)
         switchOverlay.isChecked = overlayEnabled
-        tvOverlayStatus.text = if (overlayEnabled) "已开启" else "未开启"
+        tvOverlayStatus.text = if (overlayEnabled) "Enabled" else "Disabled"
         tvOverlayStatus.setTextColor(
             getColor(if (overlayEnabled) R.color.status_on else R.color.status_off)
         )
-        // 重新绑定监听器
+        // Re-bind listener
         switchOverlay.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked && !Settings.canDrawOverlays(this)) {
                 val intent = Intent(
@@ -174,7 +174,7 @@ class MainActivity : AppCompatActivity() {
                 )
                 overlayPermissionLauncher.launch(intent)
             } else if (!isChecked && Settings.canDrawOverlays(this)) {
-                Toast.makeText(this, "请手动关闭悬浮窗权限", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Please manually disable floating window permission", Toast.LENGTH_SHORT).show()
                 val intent = Intent(
                     Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                     Uri.parse("package:$packageName")
@@ -184,7 +184,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /** 设置下拉框展开/收起 */
+    /** Set dropdown expand/collapse */
     private fun setupExpandable(root: View, headerId: Int, contentId: Int, arrowId: Int) {
         val header = root.findViewById<View>(headerId)
         val content = root.findViewById<View>(contentId)
@@ -200,7 +200,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /** 检查无障碍服务是否已启用 */
+    /** Check if accessibility service is enabled */
     private fun isAccessibilityServiceEnabled(): Boolean {
         val serviceName = "$packageName/${packageName}.ClickAccessibilityService"
         val enabledServices = Settings.Secure.getString(

@@ -70,7 +70,7 @@ class RushBuyActivity : AppCompatActivity() {
         btnRushStop = findViewById(R.id.btnRushStop)
         switchShowFloatingTime = findViewById(R.id.switchShowFloatingTime)
 
-        // 先注册监听器，再加载设置（确保 loadSettings 设置 isChecked 时能触发 visibility 更新）
+        // Register listener first, then load settings (ensures loadSettings triggering isChecked updates visibility)
         switchScheduled.setOnCheckedChangeListener { _, isChecked ->
             layoutScheduledTime.visibility = if (isChecked) View.VISIBLE else View.GONE
         }
@@ -86,17 +86,17 @@ class RushBuyActivity : AppCompatActivity() {
 
         btnBack.setOnClickListener { finish() }
 
-        // 定位按钮 - 显示定位悬浮窗
+        // Locate button - Show locate overlay window
         btnLocate.setOnClickListener {
             if (!checkPermissions()) return@setOnClickListener
             val currentX = getTargetX()
             val currentY = getTargetY()
             ClickAccessibilityService.showLocateOverlay(currentX, currentY)
-            Toast.makeText(this, "请拖动准星到目标位置，单击确认", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Please drag crosshairs to target position, tap to confirm", Toast.LENGTH_LONG).show()
             moveTaskToBack(true)
         }
 
-        // 立即抢购
+        // Immediate rush buy
         btnRushStart.setOnClickListener {
             if (!checkPermissions()) return@setOnClickListener
             saveSettings()
@@ -108,7 +108,7 @@ class RushBuyActivity : AppCompatActivity() {
             }
         }
 
-        // 停止
+        // Stop
         btnRushStop.setOnClickListener {
             cancelScheduled()
             ClickAccessibilityService.stopClicking()
@@ -135,10 +135,10 @@ class RushBuyActivity : AppCompatActivity() {
         stopStatusUpdate()
     }
 
-    /** 检查权限 */
+    /** Check permissions */
     private fun checkPermissions(): Boolean {
         if (!Settings.canDrawOverlays(this)) {
-            Toast.makeText(this, "请先开启悬浮窗权限", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Please enable floating window permission first", Toast.LENGTH_SHORT).show()
             startActivity(Intent(
                 Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                 Uri.parse("package:$packageName")
@@ -146,14 +146,14 @@ class RushBuyActivity : AppCompatActivity() {
             return false
         }
         if (!ClickAccessibilityService.isRunning()) {
-            Toast.makeText(this, "请先开启无障碍服务", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Please enable Accessibility Service first", Toast.LENGTH_SHORT).show()
             startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
             return false
         }
         return true
     }
 
-    /** 从服务读取定位坐标 */
+    /** Load locate coordinates from service */
     private fun loadCoordinatesFromService() {
         val coords = ClickAccessibilityService.getLocatedCoordinates()
         if (coords != null) {
@@ -163,7 +163,7 @@ class RushBuyActivity : AppCompatActivity() {
         }
     }
 
-    /** 读取保存的设置 */
+    /** Load saved settings */
     private fun loadSettings() {
         val prefs = getSharedPreferences("rush_buy_prefs", Context.MODE_PRIVATE)
         etTargetX.setText(prefs.getInt("target_x", 540).toString())
@@ -173,7 +173,7 @@ class RushBuyActivity : AppCompatActivity() {
         etAdvanceTime.setText(prefs.getLong("advance_time", 0L).toString())
         switchScheduled.isChecked = prefs.getBoolean("scheduled_enabled", false)
 
-        // 触发时间默认值：当前时间 + 5 分钟（每次打开都刷新）
+        // Default trigger time: current time + 5 minutes (refreshed every open)
         val defaultCal = Calendar.getInstance().apply { add(Calendar.MINUTE, 5) }
         val hour = defaultCal.get(Calendar.HOUR_OF_DAY)
         val minute = defaultCal.get(Calendar.MINUTE)
@@ -182,12 +182,12 @@ class RushBuyActivity : AppCompatActivity() {
         etScheduledMinute.setText(String.format("%02d", minute))
         etScheduledSecond.setText(String.format("%02d", second))
 
-        // 悬浮时间开关
+        // Floating time switch
         showFloatingTime = prefs.getBoolean("show_floating_time", true)
         switchShowFloatingTime.isChecked = showFloatingTime
     }
 
-    /** 保存设置 */
+    /** Save settings */
     private fun saveSettings() {
         val prefs = getSharedPreferences("rush_buy_prefs", Context.MODE_PRIVATE)
         prefs.edit()
@@ -213,7 +213,7 @@ class RushBuyActivity : AppCompatActivity() {
     private fun getScheduledMinute(): Int = etScheduledMinute.text.toString().trim().toIntOrNull()?.coerceIn(0, 59) ?: 0
     private fun getScheduledSecond(): Int = etScheduledSecond.text.toString().trim().toIntOrNull()?.coerceIn(0, 59) ?: 0
 
-    /** 立即抢购 */
+    /** Immediate rush buy */
     private fun startImmediateRush() {
         val x = getTargetX()
         val y = getTargetY()
@@ -223,7 +223,7 @@ class RushBuyActivity : AppCompatActivity() {
 
         isScheduledMode = false
         tvCountdown.visibility = View.GONE
-        tvRushStatus.text = "准备中..."
+        tvRushStatus.text = "Preparing..."
         tvRushStatus.setTextColor(getColor(R.color.btn_danger))
 
         handler.postDelayed({
@@ -232,7 +232,7 @@ class RushBuyActivity : AppCompatActivity() {
         }, advance)
     }
 
-    /** 定时抢购 */
+    /** Scheduled rush buy */
     private fun startScheduledRush() {
         val calendar = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, getScheduledHour())
@@ -252,17 +252,17 @@ class RushBuyActivity : AppCompatActivity() {
         isScheduledMode = true
         tvCountdown.visibility = View.VISIBLE
 
-        // 显示悬浮倒计时
+        // Show floating countdown
         if (showFloatingTime) {
             ClickAccessibilityService.showFloatingTime(triggerTime)
         }
 
         val sdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
         val timeStr = sdf.format(calendar.time)
-        tvRushStatus.text = "定时等待中..."
+        tvRushStatus.text = "Waiting for schedule..."
         tvRushStatus.setTextColor(getColor(R.color.text_secondary))
 
-        Toast.makeText(this, "将在 $timeStr 自动抢购（提前 ${advance}ms）", Toast.LENGTH_LONG).show()
+        Toast.makeText(this, "Will auto-rush at $timeStr (${advance}ms in advance)", Toast.LENGTH_LONG).show()
 
         countdownRunnable = object : Runnable {
             override fun run() {
@@ -284,8 +284,8 @@ class RushBuyActivity : AppCompatActivity() {
                 val h = secs / 3600
                 val m = (secs % 3600) / 60
                 val s = secs % 60
-                tvCountdown.text = String.format("倒计时: %02d:%02d:%02d", h, m, s)
-                // 更新悬浮时间
+                tvCountdown.text = String.format("Countdown: %02d:%02d:%02d", h, m, s)
+                // Update floating time
                 if (showFloatingTime) {
                     ClickAccessibilityService.updateFloatingTime(remaining)
                 }
@@ -296,7 +296,7 @@ class RushBuyActivity : AppCompatActivity() {
         updateUI()
     }
 
-    /** 取消定时 */
+    /** Cancel schedule */
     private fun cancelScheduled() {
         countdownRunnable?.let { handler.removeCallbacks(it) }
         countdownRunnable = null
@@ -305,13 +305,13 @@ class RushBuyActivity : AppCompatActivity() {
         ClickAccessibilityService.removeFloatingTime()
     }
 
-    /** 更新 UI */
+    /** Update UI */
     private fun updateUI() {
         val isClicking = ClickAccessibilityService.isClicking()
         if (isClicking) {
             btnRushStart.isEnabled = false
             btnRushStop.isEnabled = true
-            tvRushStatus.text = "抢购进行中！"
+            tvRushStatus.text = "Rush buy in progress!"
             tvRushStatus.setTextColor(getColor(R.color.btn_danger))
         } else if (isScheduledMode) {
             btnRushStart.isEnabled = false
@@ -319,24 +319,24 @@ class RushBuyActivity : AppCompatActivity() {
         } else {
             btnRushStart.isEnabled = true
             btnRushStop.isEnabled = false
-            tvRushStatus.text = "就绪"
+            tvRushStatus.text = "Ready"
             tvRushStatus.setTextColor(getColor(R.color.text_secondary))
         }
         updateClickCount()
     }
 
-    /** 更新点击计数 */
+    /** Update click count */
     private fun updateClickCount() {
         val count = ClickAccessibilityService.getClickedCount()
         if (count > 0) {
             tvRushClickCount.visibility = View.VISIBLE
-            tvRushClickCount.text = "已点击 $count 次"
+            tvRushClickCount.text = "Clicked $count times"
         } else {
             tvRushClickCount.visibility = View.GONE
         }
     }
 
-    /** 开始定时刷新状态 */
+    /** Start scheduled status refresh */
     private fun startStatusUpdate() {
         stopStatusUpdate()
         statusRunnable = object : Runnable {
@@ -351,7 +351,7 @@ class RushBuyActivity : AppCompatActivity() {
         handler.post(statusRunnable!!)
     }
 
-    /** 停止定时刷新 */
+    /** Stop status refresh */
     private fun stopStatusUpdate() {
         statusRunnable?.let { handler.removeCallbacks(it) }
         statusRunnable = null

@@ -8,32 +8,32 @@ import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 
 /**
- * 抢票引擎 — 基于 Accessibility Service 节点树直接操作 APP 控件
+ * Ticket Grab Engine — Operates APP controls directly based on Accessibility Service node tree
  *
- * 状态机：IDLE → ENTERING_PAGE → SELECTING_SESSION → SELECTING_PRICE
- *        → SELECTING_VIEWERS → SUBMITTING_ORDER → DONE
+ * State Machine: IDLE → ENTERING_PAGE → SELECTING_SESSION → SELECTING_PRICE
+ *               → SELECTING_VIEWERS → SUBMITTING_ORDER → DONE
  */
 class TicketGrabEngine(private val service: AccessibilityService) {
 
     enum class State {
-        IDLE,               // 空闲，未启动
-        ENTERING_PAGE,      // 不断点击"立即"/"购票"进入选票页
-        SELECTING_SESSION,  // 选择场次
-        SELECTING_PRICE,    // 选择价格档位
-        SELECTING_VIEWERS,  // 勾选观演人
-        SUBMITTING_ORDER,   // 提交订单
-        DONE                // 完成
+        IDLE,               // Idle, not started
+        ENTERING_PAGE,      // Continuously tap "Immediate" / "Buy Tickets" to enter ticket selection page
+        SELECTING_SESSION,  // Select session
+        SELECTING_PRICE,    // Select price tier
+        SELECTING_VIEWERS,  // Check viewers
+        SUBMITTING_ORDER,   // Submit order
+        DONE                // Done
     }
 
     data class Config(
-        val sessions: List<String>,     // 场次关键词列表，如 ["05-31", "06-01"]
-        val prices: List<String>,       // 价格档位关键词列表，如 ["1555", "355"]
-        val viewers: List<String>,      // 观演人姓名关键词列表，如 ["张三", "李四"]
-        val retryInterval: Long = 300L, // 每轮操作间隔(ms)
-        val maxRetries: Int = 200       // 最大重试轮数
+        val sessions: List<String>,     // Session keyword list, e.g. ["05-31", "06-01"]
+        val prices: List<String>,       // Price tier keyword list, e.g. ["1555", "355"]
+        val viewers: List<String>,      // Viewer name keyword list, e.g. ["John Doe", "Jane Smith"]
+        val retryInterval: Long = 300L, // Operation interval per round (ms)
+        val maxRetries: Int = 200       // Max retry rounds
     )
 
-    // ==================== 公开 API ====================
+    // ==================== Public API ====================
 
     var state: State = State.IDLE
         private set
@@ -44,7 +44,7 @@ class TicketGrabEngine(private val service: AccessibilityService) {
     var attemptCount: Int = 0
         private set
 
-    var statusMessage: String = "就绪"
+    var statusMessage: String = "Ready"
         private set
 
     var onStateChanged: ((State, String) -> Unit)? = null
@@ -64,20 +64,20 @@ class TicketGrabEngine(private val service: AccessibilityService) {
         currentPriceIndex = 0
         attemptCount = 0
         ClickAccessibilityService.showFloatingLog()
-        transitionTo(State.ENTERING_PAGE, "等待进入选票页...")
+        transitionTo(State.ENTERING_PAGE, "Waiting to enter ticket selection page...")
     }
 
     fun stop() {
         isRunning = false
         handler.removeCallbacksAndMessages(null)
-        transitionTo(State.IDLE, "已停止")
+        transitionTo(State.IDLE, "Stopped")
         ClickAccessibilityService.removeFloatingLog()
     }
 
     fun isRunning(): Boolean = isRunning && state != State.IDLE && state != State.DONE
 
     /**
-     * 由 ClickAccessibilityService.onAccessibilityEvent 调用
+     * Called by ClickAccessibilityService.onAccessibilityEvent
      */
     fun onEvent(event: AccessibilityEvent) {
         if (!isRunning) return
@@ -90,7 +90,7 @@ class TicketGrabEngine(private val service: AccessibilityService) {
         }
     }
 
-    // ==================== 状态机驱动 ====================
+    // ==================== State Machine Driver ====================
 
     private fun handleState() {
         if (!isRunning) return
@@ -106,23 +106,23 @@ class TicketGrabEngine(private val service: AccessibilityService) {
     }
 
     /**
-     * Phase 1: 不断点击"立即"按钮，直到页面出现含"票档"的节点
+     * Phase 1: Continuously click "Immediate" button until node containing "票档" (Ticket Tier) appears
      */
     private fun handleEnteringPage() {
         val rootNode = rootInActiveWindow ?: return
 
-        // 检查是否已进入选票页面 — 查找含"票档"文字的节点
+        // Check if entered ticket selection page — find node containing "票档"
         if (findNodeByTextContains(rootNode, "票档") != null) {
             currentSessionIndex = 0
-            transitionTo(State.SELECTING_SESSION, "正在选择场次...")
+            transitionTo(State.SELECTING_SESSION, "Selecting session...")
             rootNode.recycle()
             return
         }
 
-        // 还没进入，点击"立即"按钮
+        // Not yet entered, click "Immediate" or "Buy Tickets" button
         if (clickNodeByText(rootNode, "立即") || clickNodeByText(rootNode, "购票")) {
             attemptCount++
-            updateStatus("点击进入选票页 (第${attemptCount}次)")
+            updateStatus("Tap to enter ticket page (attempt #${attemptCount})")
         }
 
         rootNode.recycle()
@@ -130,12 +130,12 @@ class TicketGrabEngine(private val service: AccessibilityService) {
     }
 
     /**
-     * Phase 2: 遍历场次，跳过无票场次
+     * Phase 2: Iterate sessions, skip sold-out sessions
      */
     private fun handleSelectingSession() {
         val cfg = config ?: return stop()
         if (currentSessionIndex >= cfg.sessions.size) {
-            // 所有场次都遍历完了，重新开始
+            // All sessions traversed, restart
             currentSessionIndex = 0
             retryCount++
             if (checkRetryLimit()) return
@@ -144,47 +144,47 @@ class TicketGrabEngine(private val service: AccessibilityService) {
         val rootNode = rootInActiveWindow ?: return
         val session = cfg.sessions[currentSessionIndex]
 
-        // 查找场次节点
+        // Find session node
         val sessionNode = findNodeByTextContains(rootNode, session)
         if (sessionNode == null) {
             rootNode.recycle()
             attemptCount++
-            updateStatus("未找到场次: $session")
+            updateStatus("Session not found: $session")
             currentSessionIndex++
             return
         }
 
-        // 检查场次是否无票 — 场次节点的兄弟/子节点含"无票"或"缺货登记"
+        // Check if session is sold out — sibling/child node contains "无票" (Sold Out) or "缺货登记" (Out of Stock Registration)
         if (isSoldOut(sessionNode)) {
-            updateStatus("场次 $session 无票，跳过")
+            updateStatus("Session $session sold out, skipping")
             currentSessionIndex++
             rootNode.recycle()
             return
         }
 
-        // 点击选择该场次
+        // Click to select this session
         if (performClick(sessionNode)) {
             currentPriceIndex = 0
-            transitionTo(State.SELECTING_PRICE, "选择价格档位...")
+            transitionTo(State.SELECTING_PRICE, "Selecting price tier...")
         } else {
-            // 如果无法直接点击，尝试点击文字
+            // If cannot click directly, try clicking text
             clickNodeByTextContains(rootNode, session)
             currentPriceIndex = 0
-            transitionTo(State.SELECTING_PRICE, "选择价格档位...")
+            transitionTo(State.SELECTING_PRICE, "Selecting price tier...")
         }
 
         rootNode.recycle()
     }
 
     /**
-     * Phase 3: 遍历价格档位，跳过缺货的
+     * Phase 3: Iterate price tiers, skip out-of-stock ones
      */
     private fun handleSelectingPrice() {
         val cfg = config ?: return stop()
         if (currentPriceIndex >= cfg.prices.size) {
-            // 该场次所有价格都缺货，换下一个场次
+            // All prices for this session are out of stock, switch to next session
             currentSessionIndex++
-            transitionTo(State.SELECTING_SESSION, "该场次价格均缺货，换场次...")
+            transitionTo(State.SELECTING_SESSION, "All prices for this session out of stock, switching session...")
             return
         }
 
@@ -198,26 +198,26 @@ class TicketGrabEngine(private val service: AccessibilityService) {
             return
         }
 
-        // 检查是否缺货
+        // Check if out of stock
         if (isSoldOut(priceNode)) {
-            updateStatus("价格 $price 缺货，跳过")
+            updateStatus("Price $price out of stock, skipping")
             currentPriceIndex++
             rootNode.recycle()
             return
         }
 
-        // 点击选择该价格
+        // Click to select this price
         if (performClick(priceNode) || clickNodeByTextContains(rootNode, price)) {
             attemptCount++
-            updateStatus("选择价格: $price")
+            updateStatus("Selected price: $price")
 
-            // 设置票数（点击"+"按钮 N-1 次，N = 观演人数）
+            // Set ticket count (click "+" button N-1 times, N = number of viewers)
             handler.postDelayed({
                 setTicketCount(cfg.viewers.size)
-                // 点击"确定"
+                // Click "Confirm"
                 handler.postDelayed({
                     clickConfirm(rootNode)
-                    transitionTo(State.SELECTING_VIEWERS, "选择观演人...")
+                    transitionTo(State.SELECTING_VIEWERS, "Selecting viewers...")
                 }, 200)
             }, 200)
         }
@@ -226,7 +226,7 @@ class TicketGrabEngine(private val service: AccessibilityService) {
     }
 
     /**
-     * Phase 4: 勾选观演人
+     * Phase 4: Check viewers
      */
     private fun handleSelectingViewers() {
         val cfg = config ?: return stop()
@@ -236,31 +236,31 @@ class TicketGrabEngine(private val service: AccessibilityService) {
         for (viewerName in cfg.viewers) {
             val viewerNode = findNodeByTextContains(rootNode, viewerName)
             if (viewerNode != null) {
-                // 尝试找到可点击的复选框（通常在 parent 的第 4 个 child）
+                // Try to find clickable checkbox (usually 4th child of parent)
                 val clicked = clickViewerCheckbox(viewerNode)
                 if (!clicked) {
-                    // 备用方案：直接点击文字
+                    // Fallback: click text directly
                     performClick(viewerNode)
                 }
-                updateStatus("勾选观演人: $viewerName")
+                updateStatus("Selected viewer: $viewerName")
             } else {
                 allSelected = false
             }
         }
 
-        // 勾选完毕，进入提交
+        // Selection complete, proceed to submit
         if (allSelected) {
-            transitionTo(State.SUBMITTING_ORDER, "提交订单...")
+            transitionTo(State.SUBMITTING_ORDER, "Submitting order...")
         } else {
-            // 即使部分没找到，也尝试提交
-            transitionTo(State.SUBMITTING_ORDER, "提交订单...")
+            // Proceed to submit even if some were not found
+            transitionTo(State.SUBMITTING_ORDER, "Submitting order...")
         }
 
         rootNode.recycle()
     }
 
     /**
-     * Phase 5: 提交订单
+     * Phase 5: Submit order
      */
     private fun handleSubmittingOrder() {
         val rootNode = rootInActiveWindow ?: return
@@ -268,19 +268,19 @@ class TicketGrabEngine(private val service: AccessibilityService) {
         val clicked = clickNodeByText(rootNode, "提交订单")
         if (clicked) {
             attemptCount++
-            updateStatus("已点击提交订单")
+            updateStatus("Clicked submit order")
         }
 
-        // 处理弹窗"我知道了"
+        // Handle pop-up "I know" (我知道了)
         clickNodeByText(rootNode, "我知道了")
         clickNodeById(rootNode, "damai_theme_dialog_confirm_btn")
 
-        // 检查是否出现支付相关界面（说明成功）
+        // Check if payment-related interface appears (indicates success)
         if (findNodeByTextContains(rootNode, "支付") != null ||
             findNodeByTextContains(rootNode, "收银台") != null) {
-            transitionTo(State.DONE, "抢票成功！请尽快完成支付")
+            transitionTo(State.DONE, "Ticket grabbed successfully! Please complete payment ASAP")
             isRunning = false
-            // 不立即移除日志窗，保留成功消息供用户查看
+            // Keep log window open to show success message
             handler.postDelayed({
                 ClickAccessibilityService.removeFloatingLog()
             }, 5000)
@@ -288,24 +288,24 @@ class TicketGrabEngine(private val service: AccessibilityService) {
             return
         }
 
-        // 如果出现"我知道了"弹窗，说明失败，重新开始
+        // If "I know" dialog appears, it means failure, restart
         if (findNodeByTextContains(rootNode, "我知道了") != null) {
             currentSessionIndex = 0
             retryCount++
-            transitionTo(State.ENTERING_PAGE, "重新抢票...")
+            transitionTo(State.ENTERING_PAGE, "Restarting ticket grab...")
         }
 
         rootNode.recycle()
         checkRetryLimit()
     }
 
-    // ==================== 辅助方法 ====================
+    // ==================== Helper Methods ====================
 
     private val rootInActiveWindow: AccessibilityNodeInfo?
         get() = service.rootInActiveWindow
 
     /**
-     * 查找包含指定文字的节点（模糊匹配）
+     * Find node containing specified text (fuzzy match)
      */
     fun findNodeByTextContains(root: AccessibilityNodeInfo, text: String): AccessibilityNodeInfo? {
         val nodes = root.findAccessibilityNodeInfosByText(text)
@@ -313,7 +313,7 @@ class TicketGrabEngine(private val service: AccessibilityService) {
     }
 
     /**
-     * 查找完全匹配指定文字的节点
+     * Find node matching specified text exactly
      */
     fun findNodeByTextExact(root: AccessibilityNodeInfo, text: String): AccessibilityNodeInfo? {
         val nodes = root.findAccessibilityNodeInfosByText(text)
@@ -321,7 +321,7 @@ class TicketGrabEngine(private val service: AccessibilityService) {
     }
 
     /**
-     * 按 resource-id 查找节点
+     * Find node by resource-id
      */
     fun findNodeById(root: AccessibilityNodeInfo, viewId: String): AccessibilityNodeInfo? {
         val nodes = root.findAccessibilityNodeInfosByViewId(viewId)
@@ -329,7 +329,7 @@ class TicketGrabEngine(private val service: AccessibilityService) {
     }
 
     /**
-     * 点击包含指定文字的节点
+     * Click node containing specified text
      */
     fun clickNodeByTextContains(root: AccessibilityNodeInfo, text: String): Boolean {
         val node = findNodeByTextContains(root, text) ?: return false
@@ -337,7 +337,7 @@ class TicketGrabEngine(private val service: AccessibilityService) {
     }
 
     /**
-     * 点击完全匹配指定文字的节点
+     * Click node matching specified text exactly
      */
     fun clickNodeByText(root: AccessibilityNodeInfo, text: String): Boolean {
         val node = findNodeByTextExact(root, text) ?: return false
@@ -345,7 +345,7 @@ class TicketGrabEngine(private val service: AccessibilityService) {
     }
 
     /**
-     * 点击指定 resource-id 的节点
+     * Click node with specified resource-id
      */
     fun clickNodeById(root: AccessibilityNodeInfo, viewId: String): Boolean {
         val node = findNodeById(root, viewId) ?: return false
@@ -353,11 +353,11 @@ class TicketGrabEngine(private val service: AccessibilityService) {
     }
 
     /**
-     * 对节点执行点击操作（优先 ACTION_CLICK，不可点击则向上找可点击的父节点）
+     * Perform click action on node (prefer ACTION_CLICK, search parent upwards if not clickable)
      */
     fun performClick(node: AccessibilityNodeInfo): Boolean {
         var target: AccessibilityNodeInfo? = node
-        // 最多向上找 5 层
+        // Search up to 5 levels upwards
         for (i in 0..5) {
             if (target == null) return false
             if (target.isClickable) {
@@ -369,20 +369,20 @@ class TicketGrabEngine(private val service: AccessibilityService) {
     }
 
     /**
-     * 判断节点对应的项目是否已售罄
-     * 检查兄弟/子节点中是否含有"无票"或"缺货登记"文字
+     * Check if item corresponding to node is sold out
+     * Check if sibling/child nodes contain "无票" or "缺货登记"
      */
     fun isSoldOut(node: AccessibilityNodeInfo): Boolean {
         val parent = node.parent ?: return false
 
-        // 遍历父节点的所有子节点，查找售罄标记
+        // Traverse all child nodes of parent to find sold-out marks
         for (i in 0 until parent.childCount) {
             val child = parent.getChild(i) ?: continue
             val text = child.text?.toString() ?: continue
             if (text.contains("无票") || text.contains("缺货登记") || text.contains("缺货")) {
                 return true
             }
-            // 进一步检查子节点的子节点
+            // Further check grandchildren
             for (j in 0 until child.childCount) {
                 val grandChild = child.getChild(j) ?: continue
                 val gcText = grandChild.text?.toString() ?: continue
@@ -395,22 +395,22 @@ class TicketGrabEngine(private val service: AccessibilityService) {
     }
 
     /**
-     * 设置票数 = 观演人数（通过点击"+"按钮）
+     * Set ticket count = number of viewers (by clicking "+" button)
      */
     private fun setTicketCount(viewerCount: Int) {
         val rootNode = rootInActiveWindow ?: return
         if (viewerCount <= 1) return
 
-        // 查找含"1张"的节点，其父节点的第3个子节点通常是"+"按钮
+        // Find node containing "1张", its parent's 3rd child is usually the "+" button
         val ticketNode = findNodeByTextContains(rootNode, "1张") ?: return
         val parent = ticketNode.parent ?: return
 
-        // 尝试找到"+"按钮
+        // Try to find "+" button
         for (i in 0 until parent.childCount) {
             val child = parent.getChild(i) ?: continue
             val text = child.text?.toString() ?: continue
             if (text.contains("+") || child.contentDescription?.contains("增加") == true) {
-                // 点击 N-1 次
+                // Click N-1 times
                 for (k in 0 until viewerCount - 1) {
                     performClick(child)
                 }
@@ -418,7 +418,7 @@ class TicketGrabEngine(private val service: AccessibilityService) {
             }
         }
 
-        // 备用方案：查找包含"+"的可点击节点
+        // Fallback: find clickable nodes containing "+"
         val plusNodes = rootNode.findAccessibilityNodeInfosByText("+")
         for (plusNode in plusNodes) {
             if (plusNode.isClickable) {
@@ -431,14 +431,14 @@ class TicketGrabEngine(private val service: AccessibilityService) {
     }
 
     /**
-     * 点击"确定"按钮
+     * Click "Confirm" button
      */
     private fun clickConfirm(rootNode: AccessibilityNodeInfo) {
-        // 优先点击精确匹配"确定"的按钮
+        // Prefer clicking button matching "确定" exactly
         val confirmNode = findNodeByTextExact(rootNode, "确定")
         if (confirmNode != null) {
             if (!performClick(confirmNode)) {
-                // 节点不可点击，尝试点击其父容器
+                // Node not clickable, try clicking parent container
                 val parent = confirmNode.parent
                 if (parent != null) {
                     performClick(parent)
@@ -448,23 +448,23 @@ class TicketGrabEngine(private val service: AccessibilityService) {
     }
 
     /**
-     * 勾选观演人复选框
+     * Check viewer checkbox
      */
     private fun clickViewerCheckbox(viewerNode: AccessibilityNodeInfo): Boolean {
         val parent = viewerNode.parent ?: return false
 
-        // 尝试查找复选框 — 通常在兄弟节点中
+        // Try to find checkbox — usually in sibling nodes
         for (i in 0 until parent.childCount) {
             val child = parent.getChild(i) ?: continue
             if (child.isCheckable) {
                 if (!child.isChecked) {
                     return performClick(child)
                 }
-                return true // 已经勾选
+                return true // already checked
             }
         }
 
-        // 向上一层再找
+        // Search one level higher
         val grandParent = parent.parent ?: return false
         for (i in 0 until grandParent.childCount) {
             val child = grandParent.getChild(i) ?: continue
@@ -480,12 +480,12 @@ class TicketGrabEngine(private val service: AccessibilityService) {
     }
 
     /**
-     * 检查重试次数是否超限
+     * Check if retry limit exceeded
      */
     private fun checkRetryLimit(): Boolean {
         val cfg = config ?: return true
         if (retryCount >= cfg.maxRetries) {
-            transitionTo(State.DONE, "已达最大重试次数(${cfg.maxRetries})，已停止")
+            transitionTo(State.DONE, "Max retries reached (${cfg.maxRetries}), stopped")
             isRunning = false
             handler.postDelayed({
                 ClickAccessibilityService.removeFloatingLog()
