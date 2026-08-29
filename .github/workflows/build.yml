@@ -20,7 +20,7 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: '17'
-        
+
     - name: Generate Gradle Wrapper
       run: |
         mkdir temp-wrapper
@@ -28,7 +28,9 @@ jobs:
         echo "rootProject.name = 'dummy'" > settings.gradle
         gradle wrapper --gradle-version 8.4
         mv gradlew ../
-        mv gradle ../
+        mv gradlew.bat ../
+        mkdir -p ../gradle
+        cp -r gradle/wrapper ../gradle/
         cd ..
         rm -rf temp-wrapper
 
