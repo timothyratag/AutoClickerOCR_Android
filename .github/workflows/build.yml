@@ -25,6 +25,7 @@ jobs:
       run: |
         mkdir temp-wrapper
         cd temp-wrapper
+        echo "rootProject.name = 'dummy'" > settings.gradle
         gradle wrapper --gradle-version 8.4
         mv gradlew ../
         mv gradle ../
